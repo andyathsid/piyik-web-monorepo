@@ -18,6 +18,12 @@
   "devDependencies": {
     "concurrently": "9.1.2"
   },
+  "packageManager": "npm@10.9.0",
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "next": "$next"
+  },
   "dependencies": {
     "git-conventional-commits": "^2.7.1"
   }
