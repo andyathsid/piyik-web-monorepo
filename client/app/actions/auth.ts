@@ -103,3 +103,72 @@ export async function Register(
   }
 }
 
+export async function Login(
+  state: { errors: { email?: string[]; password?: string[]; }; email: string; generalError: string; } | undefined,
+  formData: FormData
+) {
+  const validatedFields = LoginFormSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    remember: formData.get("remember") === "on",
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      email: formData.get("email") as string,
+      generalError: "Login failed. Please check your credentials.",
+      success: false
+    };
+  }
+
+  const { email, password, remember } = validatedFields.data;
+
+  try {
+    // Sign in with Firebase
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Get the ID token
+    const idToken = await userCredential.user.getIdToken();
+    if (!idToken) {
+      throw new Error("Failed to get ID token");
+    }
+
+    // Create session cookie
+    const { success, error } = await createSessionCookie(idToken);
+    if (!success) {
+      throw new Error(error);
+    }
+
+    return { 
+      errors: {},
+      email: '',
+      generalError: "",
+      success: true 
+    };
+  } catch (error: any) {
+    console.error('Login error:', error);
+
+    if (error.code === 'auth/invalid-credential') {
+      return {
+        errors: {
+          password: ["Invalid email or password"]
+        },
+        email,
+        generalError: "",
+        success: false
+      };
+    }
+
+    return {
+      errors: {},
+      email: email || '',
+      generalError: "Login failed. Please try again later.",
+      success: false
+    };
+  }
+}
