@@ -1,16 +1,16 @@
 'use server'
 
-import { RegisterFormSchema } from "@/lib/auth/rules";
+import { RegisterFormSchema, LoginFormSchema } from "@/lib/auth/rules";
 import { auth } from "@/lib/firebase/client";
 import { createSessionCookie } from "@/lib/auth/sessions";
-import { redirect } from "next/navigation";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { PrismaClient } from '@prisma/client';
+
 
 const prisma = new PrismaClient();
 
 export async function Register(
-  state: { errors: { name?: string[]; email?: string[]; password?: string[]; confirmPassword?: string[]; terms?: string[]; }; email: string; name: string; generalError: string; } | undefined,
+  state: { errors: { name?: string[]; email?: string[]; password?: string[]; confirmPassword?: string[]; terms?: string[]; }; email: string; name: string; generalError: string; success: boolean; } | undefined,
   formData: FormData
 ) {
   const validatedFields = RegisterFormSchema.safeParse({
@@ -26,7 +26,8 @@ export async function Register(
       errors: validatedFields.error.flatten().fieldErrors,
       email: formData.get("email") as string,
       name: formData.get("name") as string,
-      generalError: "Registration failed. Please try again later."
+      generalError: "Registration failed. Please try again later.",
+      success: false
     };
   }
 
@@ -61,8 +62,13 @@ export async function Register(
       throw new Error(error);
     }
 
-    
-
+    return { 
+      errors: {},
+      email: '',
+      name: '',
+      generalError: "",
+      success: true
+    };
   } catch (error: any) {
     console.error('Registration error:', error);
 
@@ -80,7 +86,8 @@ export async function Register(
         },
         email,
         name,
-        generalError: ""
+        generalError: "",
+        success: false
       };
     }
 
@@ -88,11 +95,11 @@ export async function Register(
       errors: {},
       email: email || '',
       name: name || '',
-      generalError: "Registration failed. Please try again later."
+      generalError: "Registration failed. Please try again later.",
+      success: false
     };
   } finally {
     await prisma.$disconnect();
   }
-
-  redirect('/dashboard')
 }
+

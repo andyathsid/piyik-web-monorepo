@@ -22,7 +22,9 @@ import { IconAt, IconLock, IconUser, IconAlertCircle } from '@tabler/icons-react
 import classes from '@/styles/AuthenticationTitle.module.css';
 import { useActionState} from 'react';
 import { Register } from '@/app/actions/auth';
-
+import { notifications } from '@mantine/notifications';
+import { useEffect } from 'react';
+import { redirect } from 'next/navigation';
 
 export default function RegisterPage() {
     const [state, formAction, pending] = useActionState(Register, {
@@ -30,8 +32,19 @@ export default function RegisterPage() {
         email: '',
         name: '',
         generalError: '',
+        success: false
     });
 
+    useEffect(() => {
+        if (state?.success) {
+            notifications.show({
+                title: 'Success',
+                message: 'Your account has been created successfully',
+                color: 'green',
+            });
+           redirect('/dashboard');
+        }
+    }, [state?.success]);
 
     return (
         <Container size={420} my={40}>
