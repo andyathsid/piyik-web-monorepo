@@ -2,7 +2,7 @@
 
 import { Button, Stack, Text, Code } from '@mantine/core';
 import { useState } from 'react';
-import { auth } from '@/config/firebase-client';
+import { auth } from '@/lib/firebase/client';
 import { signInAnonymously } from 'firebase/auth';
 
 export default function TestPage() {
