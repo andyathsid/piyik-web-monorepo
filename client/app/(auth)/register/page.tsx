@@ -1,151 +1,169 @@
 'use client';
 
-import {
-    Anchor,
-    Button,
-    Checkbox,
-    Container,
-    Group,
-    Paper,
-    PasswordInput,
-    TextInput,
-    Title,
-    Divider,
-    Stack,
-    Text,
-    LoadingOverlay,
-    Alert
-} from '@mantine/core';
-import Link from 'next/link';
-import { GoogleButton } from '@/components/GoogleButton';
-import { IconAt, IconLock, IconUser, IconAlertCircle } from '@tabler/icons-react';
-import classes from '@/styles/AuthenticationTitle.module.css';
-import { useActionState} from 'react';
-import { Register } from '@/app/actions/auth';
+import { Alert, LoadingOverlay } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useEffect } from 'react';
-import { redirect } from 'next/navigation';
+import { IconAlertCircle } from '@tabler/icons-react';
+import Link from 'next/link';
+import { redirect } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Register } from "@/app/actions/auth";
+import { useEffect } from "react";
+import { useActionState } from 'react';
+import { GalleryVerticalEnd } from "lucide-react";
 
 export default function RegisterPage() {
-    const [state, formAction, pending] = useActionState(Register, {
-        errors: {},
-        email: '',
-        name: '',
-        generalError: '',
-        success: false
-    });
 
-    useEffect(() => {
-        if (state?.success) {
-            notifications.show({
-                title: 'Success',
-                message: 'Your account has been created successfully',
-                color: 'green',
-            });
-           redirect('/dashboard');
-        }
-    }, [state?.success]);
+  const [state, formAction, pending] = useActionState(Register, {
+    errors: {},
+    email: '',
+    name: '',
+    generalError: '',
+    success: false
+  });
 
-    return (
-        <Container size={420} my={40}>
-            <Title ta="center" className={classes.title}>
-                Create an account
-            </Title>
-            <Container ta="center">
-                <Link href="/login" className='text-decoration-none'>
-                    <Text c="dimmed" size="sm" ta="center" mt={5}>
-                        Already have an account? {' '}
-                        <Anchor size="sm" component="button">
-                            Login
-                        </Anchor>
-                    </Text>
-                </Link>
-            </Container>
+  useEffect(() => {
+    if (state?.success) {
+      notifications.show({
+        title: 'Welcome back!',
+        message: 'You have successfully logged in',
+        color: 'green',
+      });
+      redirect('/dashboard');
+    }
+  }, [state?.success]);
 
-            <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-                <LoadingOverlay visible={pending} overlayProps={{ radius: "sm", blur: 2 }} />
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <div className={cn("flex flex-col gap-6")} >
+          {state?.generalError && (
+            <Alert
+              icon={<IconAlertCircle size={16} />}
+              title="Error"
+              color="red"
+              variant="filled"
+              mb="md"
+            >
+              {state.generalError}
+            </Alert>
+          )}
+          <form className="p-6 md:p-8 relative" action={formAction}>
+            <LoadingOverlay visible={pending} overlayProps={{ radius: "sm", blur: 2 }} />
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <a href="#" className="flex flex-col items-center gap-2 font-medium">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md">
+                    <GalleryVerticalEnd className="size-6" />
+                  </div>
+                  <span className="sr-only">Acme Inc.</span>
+                </a>
+                <h1 className="text-xl font-bold">Create an account</h1>
+                <div className="text-center text-sm">
+                  Already have an account?{" "}
+                  <Link href="/login" className="underline underline-offset-4">
+                    Login
+                  </Link>
+                </div>
                 {state?.generalError && (
-                    <Alert
-                        icon={<IconAlertCircle size={16} />}
-                        title="Error"
-                        color="red"
-                        variant="filled"
-                        mb="md"
-                    >
-                        {state.generalError}
-                    </Alert>
+                  <p className="text-sm text-red-500 mt-2">{state.generalError}</p>
                 )}
-                <form action={formAction}>
-                    <Stack>
-                        <TextInput
-                            required
-                            name="name"
-                            label="Name"
-                            type='text'
-                            placeholder="Your name"
-                            radius="md"
-                            leftSection={<IconUser size={16} />}
-                            defaultValue={state?.name}
-                            disabled={pending}
-                            error={state?.errors?.name?.[0]}
-                        />
-
-                        <TextInput
-                            required
-                            name="email"
-                            label="Email"
-                            type='email'
-                            placeholder="hello@example.com"
-                            radius="md"
-                            leftSection={<IconAt size={16} />}
-                            defaultValue={state?.email}
-                            disabled={pending}
-                            error={state?.errors?.email?.[0]}
-                        />
-
-                        <PasswordInput
-                            required
-                            name="password"
-                            label="Password"
-                            type="password"
-                            placeholder="Your password"
-                            radius="md"
-                            leftSection={<IconLock size={16} />}
-                            disabled={pending}
-                            error={state?.errors?.password?.[0]}
-                        />
-
-                        <PasswordInput
-                            required
-                            name="confirmPassword"
-                            label="Confirm Password"
-                            type="password"
-                            placeholder="Confirm your password"
-                            radius="md"
-                            leftSection={<IconLock size={16} />}
-                            disabled={pending}
-                            error={state?.errors?.confirmPassword?.[0]}
-                        />
-
-                        <Checkbox
-                            name="terms"
-                            label="I accept terms and conditions"
-                            disabled={pending}
-                            error={state?.errors?.terms?.[0]}
-                        />
-
-                        <Button type="submit" fullWidth mt="xl" disabled={pending}>
-                            {pending ? 'Registering...' : 'Register'}
-                        </Button>
-                    </Stack>
-
-                    <Divider label="Or continue with" labelPosition="center" my="lg" />
-
-                    <Group grow mb="md" mt="md">
-                        <GoogleButton radius="xl" disabled={pending}>Google</GoogleButton>
-                    </Group>
-                </form>
-            </Paper>
-        </Container>
-    );
+              </div>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    defaultValue={state?.name}
+                    aria-describedby={state?.errors?.name ? "name-error" : undefined}
+                  />
+                  {state?.errors?.name && (
+                    <p className="text-sm text-red-500" id="name-error">
+                      {state.errors.name[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    defaultValue={state?.email}
+                    aria-describedby={state?.errors?.email ? "email-error" : undefined}
+                  />
+                  {state?.errors?.email && (
+                    <p className="text-sm text-red-500" id="email-error">
+                      {state.errors.email[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    aria-describedby={state?.errors?.password ? "password-error" : undefined}
+                  />
+                  {state?.errors?.password && (
+                    <p className="text-sm text-red-500" id="password-error">
+                      {state.errors.password[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    aria-describedby={state?.errors?.confirmPassword ? "confirm-password-error" : undefined}
+                  />
+                  {state?.errors?.confirmPassword && (
+                    <p className="text-sm text-red-500" id="confirm-password-error">
+                      {state.errors.confirmPassword[0]}
+                    </p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full">
+                  Register
+                </Button>
+              </div>
+              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                  Or
+                </span>
+              </div>
+              <div className="grid sm:grid-cols-1">
+                <Button variant="outline" className="w-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Continue with Google
+                </Button>
+              </div>
+            </div>
+          </form>
+          <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+            By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+            and <a href="#">Privacy Policy</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

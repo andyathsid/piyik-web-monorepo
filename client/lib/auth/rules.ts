@@ -12,9 +12,6 @@ export const RegisterFormSchema = z
       .regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character." })
       .trim(),
     confirmPassword: z.string().trim(),
-    terms: z.boolean().refine((val) => val === true, {
-      message: "You must accept the terms and conditions.",
-    }),
   })
   .superRefine((val, ctx) => {
     if (val.password !== val.confirmPassword) {

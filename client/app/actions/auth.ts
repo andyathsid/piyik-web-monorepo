@@ -10,7 +10,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function Register(
-  state: { errors: { name?: string[]; email?: string[]; password?: string[]; confirmPassword?: string[]; terms?: string[]; }; email: string; name: string; generalError: string; success: boolean; } | undefined,
+  state: { errors: { name?: string[]; email?: string[]; password?: string[]; confirmPassword?: string[]; }; email: string; name: string; generalError: string; success: boolean; } | undefined,
   formData: FormData
 ) {
   const validatedFields = RegisterFormSchema.safeParse({
@@ -18,7 +18,6 @@ export async function Register(
     email: formData.get("email"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
-    terms: formData.get("terms") === "on",
   });
 
   if (!validatedFields.success) {
@@ -170,5 +169,6 @@ export async function Login(
       generalError: "Login failed. Please try again later.",
       success: false
     };
-  }
+  } 
+
 }
