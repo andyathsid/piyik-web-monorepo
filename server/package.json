@@ -10,12 +10,6 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "packageManager": "npm@10.9.0",
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom",
-    "next": "$next"
-  },
   "dependencies": {
     "@prisma/client": "^6.1.0",
     "cors": "^2.8.5",
