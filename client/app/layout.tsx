@@ -2,15 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { Notifications } from '@mantine/notifications';
-import { MantineProvider, createTheme } from "@mantine/core";
-import { ColorSchemeScript } from '@mantine/core';
 import { ThemeProvider } from "@/components/theme-provider";
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import { theme } from './theme';
-import { Suspense } from 'react'
-import Loading from './loading'
+import Loading from "./loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +27,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -44,16 +34,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <MantineProvider 
-            defaultColorScheme="auto"
-            theme={theme}
-          >
-            <Suspense fallback={<Loading />}>
-              {children}
-              {/* <Toaster /> */}
-              <Notifications position="top-right" />
-            </Suspense>
-          </MantineProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

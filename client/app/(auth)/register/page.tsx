@@ -1,21 +1,22 @@
 'use client';
 
-import { Alert, LoadingOverlay } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { AlertCircle } from "lucide-react";
 import Link from 'next/link';
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Register } from "@/app/actions/auth";
 import { useEffect } from "react";
 import { useActionState } from 'react';
 import { GalleryVerticalEnd } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
-
+  const { toast } = useToast();
   const [state, formAction, pending] = useActionState(Register, {
     errors: {},
     email: '',
@@ -26,10 +27,9 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (state?.success) {
-      notifications.show({
-        title: 'Welcome back!',
-        message: 'You have successfully logged in',
-        color: 'green',
+      toast({
+        title: "Success",
+        description: "Successfully registered!",
       });
       redirect('/dashboard');
     }
@@ -40,25 +40,22 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className={cn("flex flex-col gap-6")} >
           {state?.generalError && (
-            <Alert
-              icon={<IconAlertCircle size={16} />}
-              title="Error"
-              color="red"
-              variant="filled"
-              mb="md"
-            >
-              {state.generalError}
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{state.generalError}</AlertDescription>
             </Alert>
           )}
           <form className="p-6 md:p-8 relative" action={formAction}>
-            <LoadingOverlay visible={pending} overlayProps={{ radius: "sm", blur: 2 }} />
+            <Spinner show={pending} size="medium">
+              Loading...
+            </Spinner>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center gap-2">
                 <a href="#" className="flex flex-col items-center gap-2 font-medium">
                   <div className="flex h-8 w-8 items-center justify-center rounded-md">
                     <GalleryVerticalEnd className="size-6" />
                   </div>
-                  <span className="sr-only">Acme Inc.</span>
+                  <span className="sr-only">Piyik</span>
                 </a>
                 <h1 className="text-xl font-bold">Create an account</h1>
                 <div className="text-center text-sm">
@@ -140,7 +137,7 @@ export default function RegisterPage() {
                   Register
                 </Button>
               </div>
-              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+              {/* <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                 <span className="relative z-10 bg-background px-2 text-muted-foreground">
                   Or
                 </span>
@@ -155,7 +152,7 @@ export default function RegisterPage() {
                   </svg>
                   Continue with Google
                 </Button>
-              </div>
+              </div> */}
             </div>
           </form>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">

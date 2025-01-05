@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase/client";
 import { createSessionCookie } from "@/lib/auth/sessions";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { PrismaClient } from '@prisma/client';
+import { adminAuth } from "@/lib/firebase/admin";
 
 
 const prisma = new PrismaClient();
@@ -171,4 +172,44 @@ export async function Login(
     };
   } 
 
+}
+
+export async function GoogleLogin(idToken: string, state: { success: boolean; error: string;} | undefined) {
+  try {
+    // Create session cookie
+    const { success, error, uid } = await createSessionCookie(idToken);
+    if (!success) {
+      throw new Error(error);
+    }
+
+    // Check if user exists in Prisma
+    let user = await prisma.user.findUnique({
+      where: { id: uid }
+    });
+
+    // If user doesn't exist, create them
+    if (!user) {
+      const firebaseUser = await adminAuth.getUser(uid as string);
+      user = await prisma.user.create({
+        data: {
+          id: uid as string,
+          email: firebaseUser.email!,
+          name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+        },
+      });
+    }
+
+    return {
+      success: true,
+      error: '', 
+    };
+  } catch (error: any) {
+    console.error('Google login error:', error);
+    return {
+      success: false,
+      error: "Failed to login with Google. Please try again."
+    };
+  } finally {
+    await prisma.$disconnect();
+  }
 }

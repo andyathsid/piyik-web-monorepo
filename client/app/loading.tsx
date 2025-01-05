@@ -1,13 +1,11 @@
-'use client';
-
-import { LoadingOverlay } from '@mantine/core';
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Loading() {
-    return (
-        <LoadingOverlay
-            visible={true}
-            overlayProps={{ radius: "lg", blur: 2 }}
-            loaderProps={{ type: 'bars' }}
-        />
-    );
+  return (
+    <div className="fixed inset-0">
+      <Spinner show={true} size="large">
+        Loading...
+      </Spinner>
+    </div>
+  );
 }
