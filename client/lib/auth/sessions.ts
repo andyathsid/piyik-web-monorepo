@@ -29,7 +29,7 @@ export async function createSessionCookie(idToken: string) {
   }
 }
 
-export async function signOut() {
+export async function signOut(state: { success: boolean; error: string; } | undefined) {
   try {
     const session = (await cookies()).get('session')?.value;
     
@@ -40,12 +40,14 @@ export async function signOut() {
       
       // Delete session cookie
       (await cookies()).delete('session');
+      
+      return { success: true, error: "" };
     }
+
   } catch (error) {
     console.error('Error signing out:', error);
+    return { success: false, error: 'Failed to sign out' };
   }
-  
-  redirect('/login');
 }
 
 export async function validateSession() {
