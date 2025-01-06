@@ -1,7 +1,8 @@
+'use client';
+
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,12 +26,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useEffect, useState } from "react"
-import { useActionState } from "react"
-import { updateProfile, sendPasswordReset } from "@/app/actions/profile"
+import { useEffect, useState, useActionState, startTransition } from "react"
+import { updateProfile, sendPasswordReset } from "@/actions/profile"
 import { useToast } from "@/hooks/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { redirect } from "next/navigation"
+import { redirect, usePathname } from "next/navigation"
+import { useRouter } from 'next/navigation';
+
 
 interface UserNavProps {
   userName?: string;
@@ -41,6 +43,8 @@ interface UserNavProps {
 export function UserNav({ userName, userEmail, userId }: UserNavProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname()
 
   const [profileState, profileAction, profilePending] = useActionState(updateProfile, {
     success: false,
@@ -53,7 +57,14 @@ export function UserNav({ userName, userEmail, userId }: UserNavProps) {
     error: "",
   });
 
-  console.log(userId);
+  const [logoutState, logoutAction, logoutPending] = useActionState(signOut, {
+    success: false,
+    error: "",
+  });
+
+
+
+
   useEffect(() => {
     if (profileState?.success) {
       toast({
@@ -86,13 +97,41 @@ export function UserNav({ userName, userEmail, userId }: UserNavProps) {
     }
   }, [resetState?.success, resetState?.error, toast]);
 
+  useEffect(() => {
+    if (logoutState?.success) {
+      toast({
+        title: "Success",
+        description: "Signed out successfully",
+      });
+      if (pathname === window.location.pathname) {
+        // Force a full reload
+        window.location.reload();
+      } else {
+        // Navigate to the new route
+        router.push(pathname);
+      }
+    } else if (logoutState?.error) {
+      toast({
+        title: "Error",
+        description: logoutState.error,
+        variant: "destructive",
+      });
+    }
+  }, [logoutState?.success, logoutState?.error, toast, router]);
+
+  const handleSignOut = () => {
+    startTransition(() => {
+      logoutAction();
+    });
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Avatar className="h-10 w-10">
                 {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" /> */}
                 <AvatarFallback>{userName?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
@@ -117,7 +156,7 @@ export function UserNav({ userName, userEmail, userId }: UserNavProps) {
               </DialogTrigger>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={handleSignOut}>
               Log out
               <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>

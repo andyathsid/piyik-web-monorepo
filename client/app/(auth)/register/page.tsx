@@ -8,14 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Register } from "@/app/actions/auth";
+import { Register } from "@/actions/auth";
 import { useEffect } from "react";
 import { useActionState } from 'react';
 import { GalleryVerticalEnd } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter, useSearchParams } from "next/navigation";
+import { BackButton } from "@/components/auth/BackButton";
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const callbackUrl = searchParams.get("callbackUrl")
+  
   const { toast } = useToast();
   const [state, formAction, pending] = useActionState(Register, {
     errors: {},
@@ -31,12 +37,13 @@ export default function RegisterPage() {
         title: "Success",
         description: "Successfully registered!",
       });
-      redirect('/dashboard');
+      router.push(callbackUrl || '/dashboard');
     }
-  }, [state?.success]);
+  }, [state?.success, callbackUrl, router]);
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+    <div className="flex relative min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <BackButton />
       <div className="w-full max-w-sm">
         <div className={cn("flex flex-col gap-6")} >
           {state?.generalError && (
@@ -60,7 +67,10 @@ export default function RegisterPage() {
                 <h1 className="text-xl font-bold">Create an account</h1>
                 <div className="text-center text-sm">
                   Already have an account?{" "}
-                  <Link href="/login" className="underline underline-offset-4">
+                  <Link 
+                    href={`/login${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`} 
+                    className="underline underline-offset-4"
+                  >
                     Login
                   </Link>
                 </div>

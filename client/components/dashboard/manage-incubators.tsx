@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ref, set, remove, get } from 'firebase/database';
 import { database } from '@/lib/firebase/client';
+import { ref, set, remove, get } from 'firebase/database';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

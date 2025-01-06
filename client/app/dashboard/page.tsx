@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useActionState, startTransition, useState } from "react";
-import { getDashboardData } from "@/app/actions/dashboard";
+import { getAuthUser } from "@/actions/getAuthUser";
 import { database } from "@/lib/firebase/client";
 import { ref, onValue } from "firebase/database";
 import Image from "next/image"
 import { IconDroplets, IconTemperature, IconEgg } from '@tabler/icons-react';
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,9 +23,17 @@ import {
 import { CalendarDateRangePicker } from "@/components/dashboard/date-range-picker"
 import { MainNav } from "@/components/dashboard/main-nav"
 import DeviceSwitcher from "@/components/dashboard/device-switcher"
-import { UserNav } from "@/components/dashboard/user-nav"
+import { UserNav } from "@/components/user-nav"
 import { Spinner } from "@/components/ui/spinner";
 import { ManageIncubators } from "@/components/dashboard/manage-incubators";
+import { Navbar } from "@/components/Navbar";
+
+const MotionCard = motion(Card);
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
 interface SensorData {
   humidity: number;
@@ -40,7 +49,7 @@ interface Device {
 }
 
 export default function DashboardPage() {
-  const [dashboardData, dashboardAction, pending] = useActionState(getDashboardData, {
+  const [dashboardData, dashboardAction, pending] = useActionState(getAuthUser, {
     user: {
       id: '',
       name: '',
@@ -79,7 +88,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!dashboardData.user.id) return;
+    if (!dashboardData?.user.id) return;
     setIsDevicesLoading(true);
 
     const devicesRef = ref(database, `users/${dashboardData.user.id}/incubators`);
@@ -103,10 +112,10 @@ export default function DashboardPage() {
     });
 
     return () => unsubscribe();
-  }, [dashboardData.user.id]);
+  }, [dashboardData?.user.id]);
 
   useEffect(() => {
-    if (!dashboardData.user.id || !selectedDevice) return;
+    if (!dashboardData?.user.id || !selectedDevice) return;
     setIsSensorDataLoading(true);
 
     setSensorData({
@@ -151,7 +160,7 @@ export default function DashboardPage() {
     return () => {
       unsubscribe();
     };
-  }, [dashboardData.user.id, selectedDevice]);
+  }, [dashboardData?.user.id, selectedDevice]);
 
   // const router = useRouter();
 
@@ -179,101 +188,153 @@ export default function DashboardPage() {
           className="hidden dark:block"
         />
       </div>
-      <div className="hidden flex-col md:flex">
-        <div className="border-b">
-          <div className="flex h-16 items-center px-4">
-            <MainNav className="mx-6" />
-            <div className="ml-auto flex items-center space-x-4 relative">
-              <Spinner show={isDevicesLoading} size="small" />
-              <UserNav 
-                userName={dashboardData?.user?.name as string}
-                userEmail={dashboardData?.user?.email as string}
-                userId={dashboardData?.user?.id as string}
-              />
+      <motion.div
+        className="hidden flex-col md:flex"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {pending ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center h-screen"
+          >
+            <Spinner size="large">Loading dashboard...</Spinner>
+          </motion.div>
+        ) : (
+          <div className="hidden flex-col md:flex">
+            <div className="border-b">
+              <div className="flex h-16 items-center px-4">
+                <Navbar
+                />
+                <div className="ml-auto flex items-center space-x-4 relative">
+                  <Spinner show={isDevicesLoading} size="small" />
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 space-y-4 p-8 pt-6">
+              <div className="flex items-center justify-between space-y-2">
+                <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+
+              </div>
+
+              <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList>
+                  <TabsTrigger value="overview">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="manage-incubators">
+                    Manage Incubators
+                  </TabsTrigger>
+                </TabsList>
+                
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <TabsContent value="overview" className="space-y-4">
+                    <div className="flex items-center justify-start relative ">
+                      <Spinner show={isDevicesLoading} size="small" />
+                      <DeviceSwitcher
+                        devices={devices}
+                        selectedDevice={selectedDevice}
+                        onDeviceSelect={setSelectedDevice}
+                      />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 relative">
+                      <Spinner show={isSensorDataLoading} size="medium">
+                        Loading sensor data...
+                      </Spinner>
+                      
+                      <MotionCard
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                      >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Humidity
+                          </CardTitle>
+                          <IconDroplets className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="text-2xl font-bold"
+                          >
+                            {sensorData.humidity.toFixed(1)}%
+                          </motion.div>
+                          <motion.p 
+                            className="text-xs text-muted-foreground"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            {hasUpdate ? (sensorData.humidity - previousData.humidity).toFixed(1) : '0'}% from previous reading
+                          </motion.p>
+                        </CardContent>
+                      </MotionCard>
+
+                      <MotionCard
+                        initial="hidden"
+                        animate="visible"
+                        variants={cardVariants}
+                      >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            DHT Temperature
+                          </CardTitle>
+                          <IconTemperature className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{sensorData.tempdht.toFixed(1)}°C</div>
+                          <p className="text-xs text-muted-foreground">
+                            {hasUpdate ? (sensorData.tempdht - previousData.tempdht).toFixed(1) : '0'}°C from previous reading
+                          </p>
+                        </CardContent>
+                      </MotionCard>
+
+                      <MotionCard
+                        initial="hidden"
+                        animate="visible"
+                        variants={cardVariants}
+                      >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Thermocouple Temperature
+                          </CardTitle>
+                          <IconEgg className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{sensorData.thermocouple.toFixed(1)}°C</div>
+                          <p className="text-xs text-muted-foreground">
+                            {hasUpdate ? (sensorData.thermocouple - previousData.thermocouple).toFixed(1) : '0'}°C from previous reading
+                          </p>
+                        </CardContent>
+                      </MotionCard>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="manage-incubators" className="space-y-4">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <ManageIncubators userId={dashboardData?.user.id ?? ''} />
+                    </motion.div>
+                  </TabsContent>
+                </motion.div>
+              </Tabs>
+
             </div>
           </div>
-        </div>
-        <div className="flex-1 space-y-4 p-8 pt-6">
-          <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-
-          </div>
-
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="overview">
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="manage-incubators">
-                Manage Incubators
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="space-y-4">
-              <div className="flex items-center justify-start space-x-2 relative">
-                <Spinner show={isDevicesLoading} size="small" />
-                <DeviceSwitcher
-                  devices={devices}
-                  selectedDevice={selectedDevice}
-                  onDeviceSelect={setSelectedDevice}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 relative">
-                <Spinner show={isSensorDataLoading} size="medium">
-                  Loading sensor data...
-                </Spinner>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Humidity
-                    </CardTitle>
-                    <IconDroplets className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{sensorData.humidity.toFixed(1)}%</div>
-                    <p className="text-xs text-muted-foreground">
-                      {hasUpdate ? (sensorData.humidity - previousData.humidity).toFixed(1) : '0'}% from previous reading
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      DHT Temperature
-                    </CardTitle>
-                    <IconTemperature className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{sensorData.tempdht.toFixed(1)}°C</div>
-                    <p className="text-xs text-muted-foreground">
-                      {hasUpdate ? (sensorData.tempdht - previousData.tempdht).toFixed(1) : '0'}°C from previous reading
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Thermocouple Temperature
-                    </CardTitle>
-                    <IconEgg className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{sensorData.thermocouple.toFixed(1)}°C</div>
-                    <p className="text-xs text-muted-foreground">
-                      {hasUpdate ? (sensorData.thermocouple - previousData.thermocouple).toFixed(1) : '0'}°C from previous reading
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            <TabsContent value="manage-incubators" className="space-y-4">
-              <ManageIncubators userId={dashboardData.user.id} />
-            </TabsContent>
-          </Tabs>
-
-        </div>
-      </div>
+        )}
+      </motion.div>
     </>
   )
 }

@@ -8,24 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Login } from "@/app/actions/auth";
+import { Login } from "@/actions/auth";
 import { useEffect, useActionState, startTransition } from "react";
-import { GoogleLogin } from "@/app/actions/auth";
-import { useRouter } from "next/navigation";
+import { GoogleLogin } from "@/actions/auth";
+import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase/client";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
+import { BackButton } from "@/components/auth/BackButton";
 
 const googleLoginAction = async (state: { success: boolean; error: string; }, idToken: string) => {
   return await GoogleLogin(idToken, state);
 };
 
 export default function LoginPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const callbackUrl = searchParams.get("callbackUrl")
+
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { toast } = useToast();
 
@@ -42,14 +45,25 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
+    if (state?.success) {
+      toast({
+        title: "Success",
+        description: "Successfully logged in",
+      });
+      router.push(callbackUrl || '/');
+    }
+  }, [state?.success, callbackUrl, router]);
+
+  useEffect(() => {
     if (googleState?.success) {
       toast({
         title: "Success",
         description: "Successfully logged in",
       });
-      redirect('/dashboard');
+      router.push(callbackUrl || '/');
     }
-  }, [googleState?.success]);
+  }, [googleState?.success, callbackUrl, router]);
+
 
   const handleGoogleLogin = async () => {
     try {
@@ -62,12 +76,12 @@ export default function LoginPage() {
         googleAction(idToken);
       });
 
-      if (state?.success) {
+      if (googleState?.success) {
         toast({
           title: "Success",
           description: "Successfully logged in with Google",
         });
-        redirect('/dashboard');
+        router.push(callbackUrl || '/');
       }
     } catch (error: any) {
       if (error.code === 'auth/cancelled-popup-request') {
@@ -90,7 +104,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10 relative">
+      <BackButton />
       <div className="w-full max-w-sm md:max-w-3xl">
         <div className={cn("flex flex-col gap-6")} >
           {state?.generalError && (
