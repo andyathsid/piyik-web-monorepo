@@ -1,14 +1,20 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, FirebaseApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { validateFirebaseConfig } from "./config";
 
-let app: ReturnType<typeof initializeApp>;
+let clientApp: FirebaseApp;
 
-const getFirebaseApp = () => {
-  if (!app) {
-    app = initializeApp({
+function initializeClientApp() {
+  if (clientApp) {
+    return clientApp;
+  }
+
+  try {
+
+    clientApp = initializeApp({
       apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
       authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
       databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
@@ -17,12 +23,24 @@ const getFirebaseApp = () => {
       messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
       appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     });
-  }
-  return app;
-};
 
-const FIREBASE_APP = getFirebaseApp();
-export const storage = getStorage(FIREBASE_APP);
-export const auth = getAuth(FIREBASE_APP);
-export const database = getDatabase(FIREBASE_APP);
-export const functions = getFunctions(FIREBASE_APP);
+    return clientApp;
+  } catch (error: any) {
+    // Check if the error is about the app already existing
+    if (error.code === 'app/duplicate-app') {
+      return getApp();
+    }
+    console.error('Firebase client initialization error:', error);
+    throw error;
+  }
+}
+
+// Initialize app and export services
+const app = initializeClientApp();
+export const storage = getStorage(app);
+export const auth = getAuth(app);
+export const database = getDatabase(app);
+export const functions = getFunctions(app);
+
+// // Export app for testing purposes
+// export const getClientApp = () => app;
