@@ -32,15 +32,18 @@ import { useToast } from "@/hooks/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { redirect, usePathname } from "next/navigation"
 import { useRouter } from 'next/navigation';
+import { cn } from "@/lib/utils"
 
 
 interface UserNavProps {
   userName?: string;
   userEmail?: string;
   userId?: string;
+  className?: string;
+  isScrolled?: boolean;
 }
 
-export function UserNav({ userName, userEmail, userId }: UserNavProps) {
+export function UserNav({ userName, userEmail, userId, className, isScrolled }: UserNavProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -130,43 +133,76 @@ export function UserNav({ userName, userEmail, userId }: UserNavProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
-                {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" /> */}
-                <AvatarFallback>{userName?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback>
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "relative h-10 w-10 rounded-full",
+                className
+              )}
+            >
+              <Avatar className={cn(
+                "h-10 w-10",
+                isScrolled 
+                  ? "bg-black/10 dark:bg-white/10"
+                  : "bg-white/20",
+                "ring-2",
+                isScrolled
+                  ? "ring-black/20 dark:ring-white/20"
+                  : "ring-white/40"
+              )}>
+                <AvatarFallback 
+                  className={cn(
+                    isScrolled
+                      ? "bg-black/5 dark:bg-white/5"
+                      : "bg-white/10",
+                    "backdrop-blur-sm",
+                    className
+                  )}
+                >
+                  {userName?.slice(0, 2).toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent 
+            className="w-56 bg-transparent backdrop-blur-sm border-0" 
+            align="end" 
+            forceMount
+          >
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{userName || 'User'}</p>
+                <p className={cn("text-sm font-medium leading-none", className)}>
+                  {userName || 'User'}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {userEmail || 'user@example.com'}
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-white/20" />
             <DropdownMenuGroup>
               <DialogTrigger asChild>
-                <DropdownMenuItem>
+                <DropdownMenuItem className={cn("backdrop-blur-sm", className)}>
                   Profile
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuSeparator className="bg-white/20" />
+            <DropdownMenuItem 
+              onClick={handleSignOut} 
+              className={cn("backdrop-blur-sm", className)}
+            >
               Log out
               <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DialogContent>
+        <DialogContent className="bg-transparent backdrop-blur-sm border-0">
           <DialogHeader>
-            <DialogTitle>Profile Settings</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className={className}>Profile Settings</DialogTitle>
+            <DialogDescription className={className}>
               Update your profile information or reset your password.
             </DialogDescription>
           </DialogHeader>

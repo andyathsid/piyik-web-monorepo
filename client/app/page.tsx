@@ -9,9 +9,10 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { Navbar } from "@/components/Navbar";
 import { Newsletter } from "@/components/home/Newsletter";
 import { Pricing } from "@/components/home/Pricing";
+import { Products } from "@/components/home/Products";
 import { ScrollToTop } from "@/components/home/ScrollToTop";
 import { Services } from "@/components/home/Services";
-import { Sponsors } from "@/components/home/Sponsors";
+import { Scroll } from "@/components/home/Scroll";
 import { Team } from "@/components/home/Team";
 import { Testimonials } from "@/components/home/Testimonials";
 
@@ -20,16 +21,17 @@ export default function Home() {
     <>
       <Navbar />
       <Hero />
-      <Sponsors />
-      <About />
-      <HowItWorks />
-      <Features />
-      <Services />
-      <Cta />
-      <Testimonials />
+      <Scroll />
+      <Products />
+      {/* <About /> */}
+      {/* <HowItWorks /> */}
+      {/* <Features />
+      <Services /> */}
+      {/* <Cta />
+      <Testimonials /> */}
       <Team />
-      <Pricing />
-      <Newsletter />
+      {/* <Pricing />
+      <Newsletter /> */}
       <FAQ />
       <Footer />
       <ScrollToTop />

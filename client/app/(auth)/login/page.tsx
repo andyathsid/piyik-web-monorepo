@@ -125,9 +125,9 @@ export default function LoginPage() {
                 </Spinner>
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col items-center text-center">
-                    <h1 className="text-2xl font-bold">Welcome back</h1>
+                    <h1 className="text-2xl font-bold">Selamat Datang Kembali</h1>
                     <p className="text-balance text-muted-foreground">
-                      Login to your Piyik Account
+                      Masuk ke Akun Piyik Anda
                     </p>
                   </div>
                   <div className="grid gap-2">
@@ -136,7 +136,7 @@ export default function LoginPage() {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="m@example.com"
+                      placeholder="email@example.com"
                       required
                       defaultValue={state?.email}
                       aria-describedby={
@@ -151,12 +151,12 @@ export default function LoginPage() {
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center">
-                      <Label htmlFor="password">Password</Label>
+                      <Label htmlFor="password">Kata Sandi</Label>
                       <Link
                         href="#"
                         className="ml-auto text-sm underline-offset-2 hover:underline"
                       >
-                        Forgot your password?
+                        Lupa kata sandi?
                       </Link>
                     </div>
                     <Input
@@ -175,11 +175,11 @@ export default function LoginPage() {
                     )}
                   </div>
                   <Button type="submit" className="w-full relative">
-                    Login
+                    Masuk
                   </Button>
                   <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                     <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                      Or
+                      Atau
                     </span>
                   </div>
                   <div className="grid sm:grid-cols-1">
@@ -190,29 +190,38 @@ export default function LoginPage() {
                           fill="currentColor"
                         />
                       </svg>
-                      Login with Google
+                      Masuk dengan Google
                     </Button>
                   </div>
                   <div className="text-center text-sm">
-                    Don&apos;t have an account?{" "}
+                    Belum punya akun?{" "}
                     <Link href="/register" className="underline underline-offset-4">
-                      Register
+                      Daftar
                     </Link>
                   </div>
                 </div>
               </form>
               <div className="relative hidden bg-muted md:block">
-                <img
-                  src="/placeholder.svg"
-                  alt="Image"
-                  className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                  <div className="w-40 h-40 mb-4">
+                    <img
+                      src="/piyik.png"
+                      alt="Logo Piyik"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-bold text-center mb-2">Selamat Datang di Piyik</h2>
+                  <p className="text-muted-foreground text-center max-w-sm">
+                    Teknologi Inkubator Pintar untuk Hasil Penetasan yang Lebih Baik
+                  </p>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-background/20 dark:from-background/80 dark:to-background/40" />
               </div>
             </CardContent>
           </Card>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-            By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-            and <a href="#">Privacy Policy</a>.
+            Dengan melanjutkan, Anda menyetujui <a href="#">Ketentuan Layanan</a>{" "}
+            dan <a href="#">Kebijakan Privasi</a> kami.
           </div>
         </div>
       </div>

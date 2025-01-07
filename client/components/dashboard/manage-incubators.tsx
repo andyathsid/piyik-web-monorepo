@@ -98,32 +98,32 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
       setNewIncubator({ deviceId: '', name: '', registeredBy: '', eggType: 'Chicken' });
       fetchIncubators();
       toast({
-        title: "Success",
-        description: "Incubator added successfully",
+        title: "Berhasil",
+        description: "Inkubator berhasil ditambahkan",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add incubator",
+        description: "Gagal menambahkan inkubator",
         variant: "destructive",
       });
     }
   };
 
   const handleDelete = async (deviceId: string) => {
-    if (confirm('Are you sure you want to delete this incubator?')) {
+    if (confirm('Apakah Anda yakin ingin menghapus inkubator ini?')) {
       const incubatorRef = ref(database, `users/${userId}/incubators/${deviceId}`);
       try {
         await remove(incubatorRef);
         fetchIncubators();
         toast({
-          title: "Success",
-          description: "Incubator deleted successfully",
+          title: "Berhasil",
+          description: "Inkubator berhasil dihapus",
         });
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to delete incubator",
+          description: "Gagal menghapus inkubator",
           variant: "destructive",
         });
       }
@@ -141,13 +141,13 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
       });
       fetchIncubators();
       toast({
-        title: "Success",
-        description: "Egg type updated successfully",
+        title: "Berhasil",
+        description: "Jenis telur berhasil diperbarui",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update egg type",
+        description: "Gagal memperbarui jenis telur",
         variant: "destructive",
       });
     }
@@ -157,12 +157,12 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Add New Incubator</CardTitle>
+          <CardTitle>Tambah Inkubator Baru</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="deviceId">Device ID</Label>
+              <Label htmlFor="deviceId">ID Perangkat</Label>
               <Input
                 id="deviceId"
                 value={newIncubator.deviceId}
@@ -171,7 +171,7 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nama</Label>
               <Input
                 id="name"
                 value={newIncubator.name}
@@ -180,7 +180,7 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="registeredBy">Registered By</Label>
+              <Label htmlFor="registeredBy">Didaftarkan Oleh</Label>
               <Input
                 id="registeredBy"
                 value={newIncubator.registeredBy}
@@ -189,39 +189,39 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="eggType">Egg Type</Label>
+              <Label htmlFor="eggType">Jenis Telur</Label>
               <Select
                 value={newIncubator.eggType}
                 onValueChange={(value) => setNewIncubator({...newIncubator, eggType: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select egg type" />
+                  <SelectValue placeholder="Pilih jenis telur" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Chicken">Chicken</SelectItem>
-                  <SelectItem value="Duck">Duck</SelectItem>
+                  <SelectItem value="Chicken">Ayam</SelectItem>
+                  <SelectItem value="Duck">Bebek</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit">Add Incubator</Button>
+            <Button type="submit">Tambah Inkubator</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Incubators</CardTitle>
+          <CardTitle>Inkubator Anda</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Device ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Registered By</TableHead>
-                <TableHead>Registered At</TableHead>
-                <TableHead>Egg Type</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>ID Perangkat</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>Didaftarkan Oleh</TableHead>
+                <TableHead>Tanggal Pendaftaran</TableHead>
+                <TableHead>Jenis Telur</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -240,8 +240,8 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Chicken">Chicken</SelectItem>
-                        <SelectItem value="Duck">Duck</SelectItem>
+                        <SelectItem value="Chicken">Ayam</SelectItem>
+                        <SelectItem value="Duck">Bebek</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -250,7 +250,7 @@ export function ManageIncubators({ userId }: ManageIncubatorsProps) {
                       variant="destructive"
                       onClick={() => handleDelete(incubator.id)}
                     >
-                      Delete
+                      Hapus
                     </Button>
                   </TableCell>
                 </TableRow>

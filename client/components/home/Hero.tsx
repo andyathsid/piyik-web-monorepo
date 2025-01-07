@@ -1,59 +1,57 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
-import { HeroCards } from "@/components/home/HeroCards";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 export const Hero = () => {
   return (
-    <section className="container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10">
-      <div className="text-center lg:text-start space-y-6">
-        <main className="text-5xl md:text-6xl font-bold">
-          <h1 className="inline">
-            <span className="inline bg-gradient-to-r from-[#F596D3]  to-[#D247BF] text-transparent bg-clip-text">
-              Shadcn
-            </span>{" "}
-            landing page
-          </h1>{" "}
-          for{" "}
-          <h2 className="inline">
-            <span className="inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
-              React
-            </span>{" "}
-            developers
-          </h2>
-        </main>
+    <section className="relative w-full h-screen rounded-b-[3rem] overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/piyik-hero.jpeg" // Pastikan untuk menambahkan gambar kandang ayam yang sesuai
+          alt="Chicken Farm Background"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-slate-900/60" /> {/* Dark overlay */}
+      </div>
 
-        <p className="text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0">
-          Build your React landing page effortlessly with the required sections
-          to your project.
-        </p>
+      {/* Content */}
+      <div className="relative z-10 container mx-auto h-full flex flex-col justify-center items-center text-center text-white">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-lg md:text-xl mb-4"
+        >
+          Pantau kesehatan telur dengan mudah menggunakan Internet of Things dan Kecerdasan Buatan
+        </motion.p>
 
-        <div className="space-y-4 md:space-y-0 md:space-x-4">
-          <Button className="w-full md:w-1/3">Get Started</Button>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-4xl md:text-5xl font-bold mb-8 max-w-4xl"
+        >
+          #JagaKesehatanTelur bersama Piyik
+        </motion.h1>
 
-          <a
-            rel="noreferrer noopener"
-            href="https://github.com/leoMirandaa/shadcn-landing-page.git"
-            target="_blank"
-            className={`w-full md:w-1/3 ${buttonVariants({
-              variant: "outline",
-            })}`}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Button
+            size="lg"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-8 py-6 text-lg"
           >
-            Github Repository
-            <GitHubLogoIcon className="ml-2 w-5 h-5" />
-          </a>
-        </div>
+            Lihat Produk Kami
+          </Button>
+        </motion.div>
       </div>
-
-      {/* Hero cards sections */}
-      <div className="z-10">
-        <HeroCards />
-      </div>
-
-      {/* Shadow effect */}
-      <div className="shadow"></div>
     </section>
   );
 };

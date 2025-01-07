@@ -27,6 +27,7 @@ import { UserNav } from "@/components/user-nav"
 import { Spinner } from "@/components/ui/spinner";
 import { ManageIncubators } from "@/components/dashboard/manage-incubators";
 import { Navbar } from "@/components/Navbar";
+import { SensorChart } from "@/components/dashboard/sensor-charts";
 
 const MotionCard = motion(Card);
 
@@ -46,6 +47,11 @@ interface Device {
   deviceId: string;
   name: string;
   registeredBy: string;
+}
+
+interface SensorHistoryData {
+  timestamp: string;
+  value: number;
 }
 
 export default function DashboardPage() {
@@ -77,6 +83,9 @@ export default function DashboardPage() {
   const [hasUpdate, setHasUpdate] = useState<boolean>(false);
   const [isDevicesLoading, setIsDevicesLoading] = useState(true);
   const [isSensorDataLoading, setIsSensorDataLoading] = useState(true);
+  const [humidityHistory, setHumidityHistory] = useState<SensorHistoryData[]>([]);
+  const [tempDHTHistory, setTempDHTHistory] = useState<SensorHistoryData[]>([]);
+  const [thermocoupleHistory, setThermocoupleHistory] = useState<SensorHistoryData[]>([]);
 
   useEffect(() => {
     const fetchData = () => {
@@ -118,48 +127,36 @@ export default function DashboardPage() {
     if (!dashboardData?.user.id || !selectedDevice) return;
     setIsSensorDataLoading(true);
 
-    setSensorData({
-      humidity: 0,
-      tempdht: 0,
-      thermocouple: 0
-    });
-
-    setPreviousData({
-      humidity: 0,
-      tempdht: 0,
-      thermocouple: 0
-    });
-
-    setHasUpdate(false);
-
     const sensorRef = ref(database, `users/${dashboardData.user.id}/incubators/${selectedDevice}/datasensor`);
-
-    let lastValues = {
-      humidity: 0,
-      tempdht: 0,
-      thermocouple: 0
-    };
 
     const unsubscribe = onValue(sensorRef, (snapshot) => {
       if (snapshot.exists()) {
-        if (lastValues.humidity !== 0) {
-          setPreviousData(lastValues);
-          setHasUpdate(true);
-        }
         const data = snapshot.val();
-        lastValues = {
+        const timestamp = new Date().toISOString();
+        
+        setSensorData({
           humidity: data.humidity ?? 0,
           tempdht: data.tempdht ?? 0,
           thermocouple: data.thermocouple ?? 0
-        };
-        setSensorData(lastValues);
+        });
+
+        setHumidityHistory(prev => [
+          ...prev.slice(-29),
+          { timestamp, value: data.humidity ?? 0 }
+        ]);
+        setTempDHTHistory(prev => [
+          ...prev.slice(-29),
+          { timestamp, value: data.tempdht ?? 0 }
+        ]);
+        setThermocoupleHistory(prev => [
+          ...prev.slice(-29),
+          { timestamp, value: data.thermocouple ?? 0 }
+        ]);
       }
       setIsSensorDataLoading(false);
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [dashboardData?.user.id, selectedDevice]);
 
   // const router = useRouter();
@@ -200,14 +197,13 @@ export default function DashboardPage() {
             animate={{ opacity: 1 }}
             className="flex items-center justify-center h-screen"
           >
-            <Spinner size="large">Loading dashboard...</Spinner>
+            <Spinner size="large">Memuat dashboard...</Spinner>
           </motion.div>
         ) : (
           <div className="hidden flex-col md:flex">
             <div className="border-b">
               <div className="flex h-16 items-center px-4">
-                <Navbar
-                />
+                <Navbar />
                 <div className="ml-auto flex items-center space-x-4 relative">
                   <Spinner show={isDevicesLoading} size="small" />
                 </div>
@@ -216,16 +212,15 @@ export default function DashboardPage() {
             <div className="flex-1 space-y-4 p-8 pt-6">
               <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-
               </div>
 
               <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList>
                   <TabsTrigger value="overview">
-                    Overview
+                    Ikhtisar
                   </TabsTrigger>
                   <TabsTrigger value="manage-incubators">
-                    Manage Incubators
+                    Kelola Inkubator
                   </TabsTrigger>
                 </TabsList>
                 
@@ -245,7 +240,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 relative">
                       <Spinner show={isSensorDataLoading} size="medium">
-                        Loading sensor data...
+                        Memuat data sensor...
                       </Spinner>
                       
                       <MotionCard
@@ -256,7 +251,7 @@ export default function DashboardPage() {
                       >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">
-                            Humidity
+                            Kelembaban
                           </CardTitle>
                           <IconDroplets className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
@@ -274,7 +269,7 @@ export default function DashboardPage() {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.2 }}
                           >
-                            {hasUpdate ? (sensorData.humidity - previousData.humidity).toFixed(1) : '0'}% from previous reading
+                            {hasUpdate ? (sensorData.humidity - previousData.humidity).toFixed(1) : '0'}% dari pembacaan sebelumnya
                           </motion.p>
                         </CardContent>
                       </MotionCard>
@@ -286,14 +281,14 @@ export default function DashboardPage() {
                       >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">
-                            DHT Temperature
+                            Suhu DHT
                           </CardTitle>
                           <IconTemperature className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">{sensorData.tempdht.toFixed(1)}°C</div>
                           <p className="text-xs text-muted-foreground">
-                            {hasUpdate ? (sensorData.tempdht - previousData.tempdht).toFixed(1) : '0'}°C from previous reading
+                            {hasUpdate ? (sensorData.tempdht - previousData.tempdht).toFixed(1) : '0'}°C dari pembacaan sebelumnya
                           </p>
                         </CardContent>
                       </MotionCard>
@@ -305,17 +300,37 @@ export default function DashboardPage() {
                       >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">
-                            Thermocouple Temperature
+                            Suhu Thermocouple
                           </CardTitle>
                           <IconEgg className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">{sensorData.thermocouple.toFixed(1)}°C</div>
                           <p className="text-xs text-muted-foreground">
-                            {hasUpdate ? (sensorData.thermocouple - previousData.thermocouple).toFixed(1) : '0'}°C from previous reading
+                            {hasUpdate ? (sensorData.thermocouple - previousData.thermocouple).toFixed(1) : '0'}°C dari pembacaan sebelumnya
                           </p>
                         </CardContent>
                       </MotionCard>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 relative mt-4">
+                      <SensorChart
+                        data={humidityHistory}
+                        title="Kelembaban"
+                        unit="%"
+                        color="hsl(var(--primary))"
+                      />
+                      <SensorChart
+                        data={tempDHTHistory}
+                        title="Suhu DHT"
+                        unit="°C"
+                        color="hsl(var(--destructive))"
+                      />
+                      <SensorChart
+                        data={thermocoupleHistory}
+                        title="Suhu Thermocouple"
+                        unit="°C"
+                        color="hsl(var(--warning))"
+                      />
                     </div>
                   </TabsContent>
                   
@@ -330,7 +345,6 @@ export default function DashboardPage() {
                   </TabsContent>
                 </motion.div>
               </Tabs>
-
             </div>
           </div>
         )}

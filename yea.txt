@@ -1,0 +1,199 @@
+Help me create a firebase authentication functionality on  @page.tsx   using firebase that I set up on @admin.ts  and @client.ts  where:
+1. User signup from a client component using the Firebase Client SDK.
+2. The user generates an ID token using the Firebase Client SDK.
+3. We send the ID token to our server via an HTTPS server action.
+Mockup example:
+```js
+"use client"
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        FIREBASE_AUTH_CLIENT,
+        email,
+        password
+      );
+      const Idtoken = await userCredential.user.getIdToken();
+      await createSession(Idtoken);
+      router.push("/");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+```
+
+
+Now lets create a server session where:
+1.  Server catches the ID token sent from client.
+2. Server verifies the ID token via Firebase Admin SDK.
+3.  Server creates a session cookie using the ID token.
+4. Server stores the session cookie securely in the browser cookies as an HttpOnly cookie, inaccessible to JavaScript.
+5. Every request validates the session cookie to ensure the user remains authenticated.
+
+Mockup example:
+```js
+"use server";
+
+import { redirect } from "next/navigation";
+import { FIREBASE_AUTH } from "../firebase";
+import { cookies } from "next/headers";
+```
+
+And then verify the token, create a 5-day session cookie, and set it in cookies.
+Mockup example:
+```js
+export async function createSession(idToken) {
+    if (!idToken) return null;
+
+    try {
+        const decodedToken = await FIREBASE_AUTH.verifyIdToken(idToken);
+        if (!decodedToken) return { success: false, error: "Invalid token." };
+
+        const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+        const sessionCookie = await FIREBASE_AUTH.createSessionCookie(idToken, { expiresIn });
+
+        await setCookie("firebaseToken", sessionCookie, { maxAge: expiresIn / 1000 });
+        console.log("Session created for UID:", decodedToken.uid);
+
+        return { success: true, uid: decodedToken.uid };
+    } catch (error) {
+        console.error("Error creating session:", error.message);
+        return { success: false, error: error.message };
+    }
+}
+```
+
+Then Set, get, or delete a cookie (Ensure secure, HttpOnly, and SameSite attributes are used correctly in production.)
+
+Mockup example:
+```js
+export async function setCookie(key, value, options = {}) {
+    const cookieStore = await cookies();
+    cookieStore.set(key, value, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 5, // Default: 5 days
+        ...options,
+    });
+}
+
+// Get a cookie value
+export async function getCookie(key) {
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get(key);
+    return cookie ? cookie.value : null;
+}
+
+// Delete a cookie
+export async function deleteCookie(key) {
+    const cookieStore = await cookies();
+    cookieStore.delete(key);
+}
+
+```
+
+We can now validate & authorize requests from our server.
+```js
+"use server"
+
+import { cookies } from "next/headers";
+import { FIREBASE_AUTH, FIREBASE_FIRESTORE } from "../firebase";
+
+export async function getUserData() {
+  try {
+    const idToken = await getCookie("firebaseToken")
+    if (!idToken) return null;
+
+    const decodedToken = await FIREBASE_AUTH.verifySessionCookie(idToken);
+    if (!decodedToken?.uid) return null;
+
+    const userSnapshot = await FIREBASE_FIRESTORE.collection("users").doc(decodedToken.uid).get();
+    if (!userSnapshot.exists) return null;
+
+    const data = userSnapshot.data();
+    const serializedData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, value?.toDate?.()?.toISOString() || value])
+    );
+
+    return { id: userSnapshot.id, ...serializedData };
+  } catch (error) {
+    console.error("Error fetching user data:", error.message);
+    return null;
+  }
+}
+```
+
+Refreshes the session by verifying the ID token and creating a new 5-day session cookie (we use createSession() again).
+
+For middleware. Next.js middleware works only with APIs that the Edge runtime supports. The firebase-admin library relies on Node.js features like the crypto module and file system APIs, which the Edge runtime doesn’t have. So we can’t perform real validation inside our middleware such as:
+
+FIREBASE_AUTH.verifySessionCookie() 
+
+So this makes (in our case) middleware-based verification unsuitable for deep checks. For us, middleware should just check if cookies exist and handle redirects, while the actual verification should happen on the server side.
+
+Mockup example:
+```js
+import { NextResponse } from "next/server";
+
+export function middleware(request) {
+  const isAuthenticated = request.cookies.get("firebaseToken");
+  const pathname = request.nextUrl.pathname;
+
+  const isAuthPage = ["/login", "/signup"].some((path) =>
+    pathname.startsWith(path)
+  );
+  const isProtectedPage = pathname.startsWith("/dashboard");
+
+  if (isAuthenticated) {
+    // Redirect authenticated users away from auth pages
+    if (isAuthPage || pathname === "/") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Allow access to dashboard or other pages (if required)
+    return NextResponse.next();
+  }
+
+  // Redirect unauthenticated users trying to access protected pages
+  if (isProtectedPage) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Allow unauthenticated users to access public pages, including "/"
+  return NextResponse.next();
+}
+```
+
+Logs out the user by revoking their Firebase session and deleting the session cookie, then redirects to the home or login page.
+
+```js
+export async function logoutSession() {
+    try {
+        const cookieStore = await cookies(); 
+        const sessionCookie = cookieStore.get("firebaseToken")?.value;
+
+        if (sessionCookie) {
+            // Revoke all Firebase sessions
+            await revokeAllSessions(sessionCookie);
+
+            // Clear the cookie by setting it to an empty value and past date
+            cookieStore.delete("firebaseToken")
+
+            // Redirect the user
+            redirect("/"); // Redirect to login or home page
+        }
+    } catch (error) {
+        console.error("Error during logout:", error.message);
+    }
+}
+
+export async function revokeAllSessions(sessionCookie) {
+    const decodedIdToken = await FIREBASE_AUTH.verifySessionCookie(sessionCookie);
+    await FIREBASE_AUTH.revokeRefreshTokens(decodedIdToken.sub);
+}
+```

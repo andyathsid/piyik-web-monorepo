@@ -1,6 +1,6 @@
 "use client";
 
-import { LogoIcon } from "@/components/home/Icons";
+import { Logo } from "@/components/Logo";
 
 export const Footer = () => {
   return (
@@ -12,157 +12,95 @@ export const Footer = () => {
           <a
             rel="noreferrer noopener"
             href="/"
-            className="font-bold text-xl flex"
+            className="font-bold text-xl flex items-center gap-2"
           >
-            <LogoIcon />
-            ShadcnUI/React
+            <Logo />
+            PIYIK
           </a>
+          <p className="mt-2 opacity-60">
+            Teknologi Inkubator Pintar untuk Hasil Penetasan yang Lebih Baik
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Follow US</h3>
+          <h3 className="font-bold text-lg">Tautan Cepat</h3>
           <div>
             <a
               rel="noreferrer noopener"
-              href="#"
+              href="#product"
               className="opacity-60 hover:opacity-100"
             >
-              Github
+              Produk
             </a>
           </div>
-
           <div>
             <a
               rel="noreferrer noopener"
-              href="#"
+              href="#features"
               className="opacity-60 hover:opacity-100"
             >
-              Twitter
+              Piyik Dashboard
             </a>
           </div>
-
           <div>
             <a
               rel="noreferrer noopener"
-              href="#"
+              href="#dashboard"
               className="opacity-60 hover:opacity-100"
             >
-              Dribbble
-            </a>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Platforms</h3>
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Web
-            </a>
-          </div>
-
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Mobile
-            </a>
-          </div>
-
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Desktop
+              Piyik Vision
             </a>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">About</h3>
+          <h3 className="font-bold text-lg">Dukungan</h3>
           <div>
             <a
               rel="noreferrer noopener"
-              href="#"
+              href="#contact"
               className="opacity-60 hover:opacity-100"
             >
-              Features
+              Hubungi Kami
             </a>
           </div>
-
           <div>
             <a
               rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Pricing
-            </a>
-          </div>
-
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
+              href="#faq"
               className="opacity-60 hover:opacity-100"
             >
               FAQ
             </a>
           </div>
+          <div>
+            <a
+              rel="noreferrer noopener"
+              href="#documentation"
+              className="opacity-60 hover:opacity-100"
+            >
+              Dokumentasi
+            </a>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold text-lg">Community</h3>
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Youtube
-            </a>
+          <h3 className="font-bold text-lg">Kontak</h3>
+          <div className="opacity-60">
+            <p>Email: info@piyik.com</p>
           </div>
-
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Discord
-            </a>
+          <div className="opacity-60">
+            <p>Telepon: +62 (022) 7801840</p>
           </div>
-
-          <div>
-            <a
-              rel="noreferrer noopener"
-              href="#"
-              className="opacity-60 hover:opacity-100"
-            >
-              Twitch
-            </a>
+          <div className="opacity-60">
+            <p>Alamat: Jl. Pendidikan No.15, Cibiru Wetan, Kec. Cileunyi, Kabupaten Bandung, Jawa Barat 40625</p>
           </div>
         </div>
       </section>
 
       <section className="container pb-14 text-center">
         <h3>
-          &copy; 2024 Landing page made by{" "}
-          <a
-            rel="noreferrer noopener"
-            target="_blank"
-            href="https://www.linkedin.com/in/leopoldo-miranda/"
-            className="text-primary transition-all border-primary hover:border-b-2"
-          >
-            Leo Miranda
-          </a>
+          © {new Date().getFullYear()} PIYIK. Hak cipta dilindungi undang-undang.
         </h3>
       </section>
     </footer>
